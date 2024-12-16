@@ -270,14 +270,12 @@
 <header>G4 Pay Timer</header>
 
 <div class="container">
-  <!-- Earned and Counter now at the top -->
   <div class="output-container">
     <div class="label">Earned:</div>
     <div class="amount" id="earnedAmount"><span class="dollars">$0</span><span class="cents">.00</span></div>
     <div class="last-run" id="lastRunDisplay" style="display:none;">Last: $0.00</div>
   </div>
 
-  <!-- Position/Year/Modifiers after the main focus -->
   <div class="input-group">
     <label for="position">Position:</label>
     <select id="position">
@@ -291,7 +289,6 @@
     <label for="year">Year:</label>
     <select id="year">
       <option value="">Select Year</option>
-      <!-- Populated by JS -->
     </select>
   </div>
 
@@ -326,8 +323,6 @@
 </div>
 
 <script>
-// Same logic as before, just rearranged the HTML structure.
-// This code includes the glow logic and everything from the previous version.
 
 const captainPayScale = {
   1: 163.29,
@@ -524,7 +519,6 @@ resetBtn.addEventListener('click', () => {
   vfnCheckbox.disabled = false;
   premiumCheckbox.disabled = false;
 
-  // Reset glow
   earnedAmount.style.textShadow = 'none';
 });
 
