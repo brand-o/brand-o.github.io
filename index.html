@@ -43,6 +43,50 @@
     position: relative;
   }
 
+  .output-container {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .output-container .label {
+    font-size: 0.9rem;
+    color: #666;
+    font-weight: 500;
+    margin-bottom: 0.3rem;
+  }
+
+  .amount {
+    line-height: 1.2;
+    margin: 0;
+    display: inline-block;
+    position: relative;
+  }
+
+  .amount .dollars {
+    font-size: 4rem;
+    font-weight: 700;
+    vertical-align: top;
+    display: inline-block;
+  }
+
+  .amount .cents {
+    font-size: 2rem;
+    font-weight: 500;
+    vertical-align: top;
+    display: inline-block;
+    margin-left: 0.1em;
+    position: relative;
+    top: 0.8rem;
+  }
+
+  .last-run {
+    margin-top: 0.3rem;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #999;
+    font-weight: 500;
+  }
+
   .input-group {
     margin-bottom: 1.5rem;
   }
@@ -135,44 +179,6 @@
     background: #15442d;
   }
 
-  .output-container {
-    margin-top: 2rem;
-    text-align: center;
-  }
-
-  .output-container .label {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
-  }
-
-  /* Making the dollar sign and dollars big, cents smaller, and top-aligned */
-  .amount {
-    line-height: 1.2;
-    margin: 0;
-    display: inline-block;
-  }
-  .amount .dollars {
-    font-size: 4rem;
-    font-weight: 700;
-    vertical-align: top;
-  }
-  .amount .cents {
-    font-size: 2rem;
-    font-weight: 500;
-    vertical-align: top;
-    margin-left: 0.1em;
-  }
-
-  .last-run {
-    margin-top: 0.3rem;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #999;
-    font-weight: 500;
-  }
-
   details {
     margin-top: 1.5rem;
   }
@@ -247,25 +253,15 @@
     .amount .dollars {
       font-size: 3rem;
     }
+
     .amount .cents {
       font-size: 1.5rem;
+      top: 0.5rem;
     }
 
     details summary {
       font-size: 0.9rem;
     }
-  }
-
-  @keyframes thousand-flash {
-    0%   { transform: scale(1); opacity: 1; }
-    20%  { transform: scale(1.2); opacity: 0.8;}
-    50%  { transform: scale(1.3); opacity: 1;}
-    80%  { transform: scale(1.2); opacity: 0.8;}
-    100% { transform: scale(1); opacity: 1; }
-  }
-
-  .thousand-milestone {
-    animation: thousand-flash 1s ease;
   }
 </style>
 </head>
@@ -274,6 +270,14 @@
 <header>G4 Pay Timer</header>
 
 <div class="container">
+  <!-- Earned and Counter now at the top -->
+  <div class="output-container">
+    <div class="label">Earned:</div>
+    <div class="amount" id="earnedAmount"><span class="dollars">$0</span><span class="cents">.00</span></div>
+    <div class="last-run" id="lastRunDisplay" style="display:none;">Last: $0.00</div>
+  </div>
+
+  <!-- Position/Year/Modifiers after the main focus -->
   <div class="input-group">
     <label for="position">Position:</label>
     <select id="position">
@@ -287,7 +291,7 @@
     <label for="year">Year:</label>
     <select id="year">
       <option value="">Select Year</option>
-      <!-- Options populated by JS -->
+      <!-- Populated by JS -->
     </select>
   </div>
 
@@ -303,12 +307,6 @@
     <button id="startBtn">Start</button>
     <button id="stopBtn" class="stop-btn" disabled>Stop</button>
     <button id="resetBtn" class="reset-btn" disabled>Reset</button>
-  </div>
-
-  <div class="output-container">
-    <div class="label">Earned:</div>
-    <div class="amount" id="earnedAmount"><span class="dollars">$0</span><span class="cents">.00</span></div>
-    <div class="last-run" id="lastRunDisplay" style="display:none;">Last: $0.00</div>
   </div>
 
   <details>
@@ -328,7 +326,8 @@
 </div>
 
 <script>
-// Same JavaScript logic as before, with updated element references due to moved $ sign
+// Same logic as before, just rearranged the HTML structure.
+// This code includes the glow logic and everything from the previous version.
 
 const captainPayScale = {
   1: 163,
@@ -375,36 +374,26 @@ const manualStartTimeInput = document.getElementById('manualStartTime');
 const manualStopTimeInput = document.getElementById('manualStopTime');
 const applyAdvancedBtn = document.getElementById('applyAdvancedBtn');
 
-const hundredGlowColors = [
-  '0 0 8px rgba(0,255,0,0.7)',
-  '0 0 8px rgba(0,128,255,0.7)',
-  '0 0 8px rgba(255,128,0,0.7)',
-  '0 0 8px rgba(255,0,200,0.7)',
-  '0 0 8px rgba(128,0,255,0.7)'
-];
-
-const thousandFontColors = [
-  '#1C5A3C',
-  '#2E8B57',
-  '#228B22',
-  '#006400',
-  '#008B8B'
-];
-
 let interval = null;
 let startTime = 0;
 let elapsedSeconds = 0;
 let hourlyWage = 0;
-let lastEarnings = 0;
-let lastHundredThreshold = 0;
-let lastThousandThreshold = 0;
 let timerRunning = false;
-let hundredColorIndex = 0;
-let thousandColorIndex = 0;
+
+function updateGlow(hundredMark) {
+  const maxIncrements = 50;
+  const effectiveIncrements = Math.min(hundredMark, maxIncrements);
+  const blur = effectiveIncrements * 0.2; // 0.2px per $100
+  if (blur > 0) {
+    earnedAmount.style.textShadow = `0 0 ${blur}px rgba(28,60,90,0.4)`;
+  } else {
+    earnedAmount.style.textShadow = 'none';
+  }
+}
 
 function populateYearDropdown(pos) {
   yearSelect.innerHTML = '<option value="">Select Year</option>';
-  let scale = pos === 'captain' ? captainPayScale : foPayScale;
+  let scale = (pos === 'captain') ? captainPayScale : foPayScale;
   for (let yr = 1; yr <= 12; yr++) {
     const pay = scale[yr];
     const option = document.createElement('option');
@@ -418,15 +407,11 @@ function getHourlyWage() {
   const pos = positionSelect.value;
   const yr = yearSelect.value;
   if (!pos || !yr) return 0;
-
-  let basePay = (pos === 'captain') ? captainPayScale[yr] || 0 : foPayScale[yr] || 0;
+  let basePay = (pos === 'captain') ? captainPayScale[yr] : foPayScale[yr];
 
   let multiplier = 1.0;
-  if (vfnCheckbox.checked) {
-    multiplier = 2.0;
-  } else if (premiumCheckbox.checked) {
-    multiplier = 1.3;
-  }
+  if (vfnCheckbox.checked) multiplier = 2.0;
+  else if (premiumCheckbox.checked) multiplier = 1.3;
 
   return basePay * multiplier;
 }
@@ -434,39 +419,19 @@ function getHourlyWage() {
 function formatEarnings(earnings) {
   const amt = earnings.toFixed(2);
   const [whole, dec] = amt.split('.');
-  return { whole, dec };
+  const wholeFormatted = Number(whole).toLocaleString();
+  return { whole: wholeFormatted, dec };
 }
 
 function updateEarnings() {
   hourlyWage = getHourlyWage();
   const earnings = (hourlyWage / 3600) * elapsedSeconds;
-
   const { whole, dec } = formatEarnings(earnings);
+
   earnedAmount.innerHTML = `<span class="dollars">$${whole}</span><span class="cents">.${dec}</span>`;
 
   const hundredMark = Math.floor(earnings / 100);
-  const thousandMark = Math.floor(earnings / 1000);
-
-  if (hundredMark > lastHundredThreshold) {
-    lastHundredThreshold = hundredMark;
-    const color = hundredGlowColors[hundredColorIndex % hundredGlowColors.length];
-    hundredColorIndex++;
-    // Apply the new glow by appending to textShadow style
-    const currentShadow = earnedAmount.style.textShadow;
-    earnedAmount.style.textShadow = currentShadow ? currentShadow + ',' + color : color;
-  }
-
-  if (thousandMark > lastThousandThreshold) {
-    lastThousandThreshold = thousandMark;
-    const newColor = thousandFontColors[thousandColorIndex % thousandFontColors.length];
-    thousandColorIndex++;
-    earnedAmount.style.color = newColor;
-
-    earnedAmount.classList.add('thousand-milestone');
-    setTimeout(() => {
-      earnedAmount.classList.remove('thousand-milestone');
-    }, 1000);
-  }
+  updateGlow(hundredMark);
 }
 
 positionSelect.addEventListener('change', () => {
@@ -537,9 +502,8 @@ stopBtn.addEventListener('click', () => {
 });
 
 resetBtn.addEventListener('click', () => {
-  let currentEarnings = (hourlyWage / 3600) * elapsedSeconds;
-  lastEarnings = currentEarnings;
-  lastRunDisplay.textContent = 'Last: $' + lastEarnings.toFixed(2);
+  const earnings = (hourlyWage / 3600) * elapsedSeconds;
+  lastRunDisplay.textContent = 'Last: $' + earnings.toFixed(2);
   lastRunDisplay.style.display = 'block';
 
   if (interval) {
@@ -560,12 +524,8 @@ resetBtn.addEventListener('click', () => {
   vfnCheckbox.disabled = false;
   premiumCheckbox.disabled = false;
 
-  lastHundredThreshold = 0;
-  lastThousandThreshold = 0;
-  hundredColorIndex = 0;
-  thousandColorIndex = 0;
+  // Reset glow
   earnedAmount.style.textShadow = 'none';
-  earnedAmount.style.color = '#222';
 });
 
 function combineTodayWithTime(timestr) {
