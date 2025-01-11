@@ -1,580 +1,1365 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>G4 Pay Timer</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;700&display=swap" rel="stylesheet">
-<style>
-  body {
-    font-family: 'Poppins', sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(to bottom, #f5f6f8, #e9ebee);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    min-height: 100vh;
-    color: #333;
-  }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <meta name="theme-color" content="#020209">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="manifest" href="manifest.json">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
+    <title>Safety++</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            color: #FAFAF9;
+        }
 
-  header {
-    background: #1C3C5A;
-    color: #fff;
-    padding: 1rem;
-    width: 100%;
-    text-align: center;
-    font-size: 1.75rem;
-    font-weight: 600;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-    position: sticky;
-    top: 0;
-    z-index: 999;
-  }
+        body {
+            background: #020209;
+            height: 100vh;
+            width: 100vw;
+            overflow-x: hidden;
+            display: flex;
+            flex-direction: column;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  .container {
-    margin-top: 2rem;
-    width: 90%;
-    max-width: 420px;
-    background: #fff;
-    border-radius: 10px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.05);
-    padding: 2rem;
-    position: relative;
-  }
+        .container {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            height: -webkit-fill-available;
+            padding: 1rem;
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+            max-width: 100%;
+            margin: 0 auto;
+            width: 100%;
+        }
 
-  .output-container {
-    text-align: center;
-    margin-bottom: 2rem;
-  }
+        .in-browser .container {
+            padding-top: 3rem;
+            padding-bottom: 4rem;
+        }
 
-  .output-container .label {
-    font-size: 0.9rem;
-    color: #666;
-    font-weight: 500;
-    margin-bottom: 0.3rem;
-  }
+        .standalone .container {
+            padding-top: calc(1rem + env(safe-area-inset-top));
+            padding-bottom: calc(2rem + env(safe-area-inset-bottom));
+        }
 
-  .amount {
-    line-height: 1.2;
-    margin: 0;
-    display: inline-block;
-    position: relative;
-  }
+        .standalone .earnings-display {
+            margin-top: env(safe-area-inset-top);
+        }
 
-  .amount .dollars {
-    font-size: 4rem;
-    font-weight: 700;
-    vertical-align: top;
-    display: inline-block;
-  }
+        .top-content {
+            flex: 1;
+        }
 
-  .amount .cents {
-    font-size: 2rem;
-    font-weight: 500;
-    vertical-align: top;
-    display: inline-block;
-    margin-left: 0.1em;
-    position: relative;
-    top: 0.8rem;
-  }
+        .bottom-controls {
+            margin-top: auto;
+            padding-bottom: max(2rem, env(safe-area-inset-bottom));
+        }
 
-  .last-run {
-    margin-top: 0.3rem;
-    text-align: center;
-    font-size: 0.8rem;
-    color: #999;
-    font-weight: 500;
-  }
+        .earnings-display {
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            padding: 2.5rem 2rem;
+            margin-bottom: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 200px;
+        }
 
-  .input-group {
-    margin-bottom: 1.5rem;
-  }
+        #earnings {
+            font-size: 4rem;
+            margin-bottom: 2.5rem;
+            display: inline-flex;
+            align-items: center;
+            font-weight: bold;
+        }
 
-  .input-group label {
-    display: block;
-    margin-bottom: 0.5rem;
-    font-weight: 500;
-    color: #333;
-    font-size: 0.95rem;
-  }
+        .dollars {
+            font-size: 4rem;
+            line-height: 1;
+            font-weight: bold;
+        }
 
-  select {
-    width: 100%;
-    padding: 0.7rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 1rem;
-    background: #fff;
-    transition: border-color 0.3s;
-  }
+        .cents {
+            font-size: 2rem;
+            margin-left: 2px;
+            font-weight: bold;
+        }
 
-  select:focus {
-    border-color: #1C3C5A;
-    outline: none;
-  }
+        .last-amounts {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
+            justify-content: center;
+            max-width: 200px;
+            margin: 0 auto;
+        }
 
-  .modifier-group {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
+        .last-amount {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.875rem;
+        }
 
-  .modifier-group label {
-    display: flex;
-    align-items: center;
-    font-weight: 500;
-    font-size: 0.9rem;
-    color: #333;
-    cursor: pointer;
-    user-select: none;
-  }
+        .leg-number {
+            width: 24px;
+            height: 24px;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #020209;
+            font-weight: bold;
+        }
 
-  .modifier-group input[type="checkbox"] {
-    margin-right: 0.5rem;
-    width: 18px;
-    height: 18px;
-    accent-color: #1C3C5A;
-    cursor: pointer;
-  }
+        .total-amount {
+            margin-top: 0.75rem;
+            padding: 0.5rem;
+            border: 1px solid #FAFAF9;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: bold;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .info-boxes {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 1rem;
+            margin-bottom: 1.5rem;
+        }
 
-  .controls {
-    display: flex;
-    gap: 0.5rem;
-    margin-top: 1rem;
-    justify-content: center;
-  }
+        .info-box {
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            padding: 1rem;
+        }
 
-  .controls button {
-    background: #1C3C5A;
-    color: #fff;
-    border: none;
-    padding: 0.7rem 1.2rem;
-    border-radius: 6px;
-    font-size: 1rem;
-    cursor: pointer;
-    flex: 1;
-    font-weight: 500;
-    transition: background 0.3s, transform 0.2s;
-  }
+        .info-box.double-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
 
-  .controls button:hover {
-    background: #162f47;
-    transform: translateY(-1px);
-  }
+        .stack-item {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            padding: 0.5rem;
+        }
 
-  .stop-btn {
-    background: #C14141;
-  }
+        #timer, #rate {
+            font-size: 1.125rem;
+            font-weight: bold;
+        }
 
-  .stop-btn:hover {
-    background: #a53434;
-  }
+        .time-status-box {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            height: 100%;
+            justify-content: center;
+        }
 
-  .reset-btn {
-    background: #1C5A3C;
-  }
+        .time-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
 
-  .reset-btn:hover {
-    background: #15442d;
-  }
+        .status-icon {
+            width: 12px;
+            height: 12px;
+            border-radius: 2px;
+        }
 
-  details {
-    margin-top: 1.5rem;
-  }
+        .play-icon {
+            background: #99AA38;
+        }
 
-  details summary {
-    cursor: pointer;
-    font-weight: 500;
-    font-size: 0.95rem;
-    color: #333;
-    margin-bottom: 0.5rem;
-  }
+        .stop-icon {
+            background: #A33B20;
+        }
 
-  details[open] summary {
-    margin-bottom: 1rem;
-  }
+        .time-placeholder {
+            font-family: monospace;
+            font-size: 1rem;
+            width: 80px;
+            height: 24px;
+            border: 1px solid #FAFAF9;
+            border-radius: 0.25rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #FAFAF9;
+            background: transparent;
+        }
 
-  .advanced-group {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
+        .top-buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+            width: 100%;
+        }
 
-  .advanced-group label {
-    font-size: 0.9rem;
-    font-weight: 500;
-    color: #444;
-  }
+        .position-btn, .modifier-btn, .year-select, .advanced-btn {
+            width: 100%;
+            padding: 0.75rem 0;
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            font-weight: bold;
+            cursor: pointer;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+        }
 
-  .advanced-group input[type="time"] {
-    width: 100%;
-    padding: 0.6rem;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    font-size: 0.9rem;
-    background: #fff;
-    transition: border-color 0.3s;
-  }
+        #captainBtn, #foBtn, .year-select, .advanced-btn {
+            border: 2px solid #5F7470;
+            color: #5F7470;
+        }
 
-  .advanced-group input[type="time"]:focus {
-    border-color: #1C3C5A;
-    outline: none;
-  }
+        #captainBtn.active, #foBtn.active {
+            background: #5F7470;
+            color: #FAFAF9;
+        }
 
-  .advanced-group button {
-    background: #1C3C5A;
-    color: #fff;
-    border: none;
-    padding: 0.6rem 1rem;
-    border-radius: 6px;
-    font-size: 0.95rem;
-    cursor: pointer;
-    font-weight: 500;
-    align-self: flex-start;
-    transition: background 0.3s, transform 0.2s;
-  }
+        #premiumBtn {
+            border: 2px solid #628395;
+            color: #628395;
+        }
 
-  .advanced-group button:hover {
-    background: #162f47;
-    transform: translateY(-1px);
-  }
+        #premiumBtn.active {
+            background: #628395;
+            color: #FAFAF9;
+        }
 
-  @media (max-width: 480px) {
-    header {
-      font-size: 1.4rem;
-    }
+        #vfnBtn {
+            border: 2px solid #DD4B42;
+            color: #DD4B42;
+        }
 
-    .controls button {
-      font-size: 0.9rem;
-      padding: 0.5rem 1rem;
-    }
+        #vfnBtn.active {
+            background: #DD4B42;
+            color: #FAFAF9;
+        }
 
-    .amount .dollars {
-      font-size: 3rem;
-    }
+        .year-select {
+            min-width: 0;
+            appearance: none;
+            text-align: center;
+            text-align-last: center;
+            padding: 0.75rem;
+        }
 
-    .amount .cents {
-      font-size: 1.5rem;
-      top: 0.5rem;
-    }
+        .controls {
+            margin-bottom: 0;
+        }
+        #advancedControls {
+            background: #0B0F1A;
+            border: 2px solid #5F7470;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            padding: 1rem;
+            margin-top: -1px;
+            position: relative;
+            z-index: 1;
+            margin-bottom: 1.5rem;
+        }
 
-    details summary {
-      font-size: 0.9rem;
-    }
-  }
-</style>
+        .input-group {
+            margin-bottom: 1rem;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 0.5rem;
+        }
+
+        .input-with-button input {
+            flex: 1;
+            padding: 0.75rem;
+            background: #0B0F1A;
+            border: 2px solid #FAFAF9;
+            border-radius: 0.375rem;
+            color: #FAFAF9;
+        }
+
+        .input-with-button input:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .apply-btn {
+            padding: 0.75rem 1.5rem;
+            background: #0B0F1A;
+            border: 2px solid #FAFAF9;
+            border-radius: 0.375rem;
+            color: #FAFAF9;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .apply-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .button-group {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        #startBtn, #stopBtn, #resetBtn {
+            height: 60px;
+            padding: 0.75rem;
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        #startBtn {
+            border: 2px solid #99AA38;
+            color: #99AA38;
+        }
+
+        #startBtn.running {
+            background: #99AA38;
+            color: #020209;
+        }
+
+        #stopBtn {
+            border: 2px solid #A33B20;
+            color: #A33B20;
+        }
+
+        #stopBtn.stopped {
+            background: #A33B20;
+            color: #020209;
+        }
+
+        #resetBtn {
+            border: 2px solid #D17B0F;
+            color: #D17B0F;
+        }
+
+        #resetBtn:active {
+            background: #D17B0F;
+            color: #020209;
+        }
+
+        #resetBtn:not(:active) {
+            background: transparent;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        @keyframes resetPress {
+            0% { background: transparent; color: #D17B0F; }
+            50% { background: #D17B0F; color: #020209; }
+            100% { background: transparent; color: #D17B0F; }
+        }
+
+        #resetBtn.pressed {
+            animation: resetPress 0.3s ease;
+        }
+
+        /* Add to Home Screen prompt styling */
+        .add-to-home {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(11, 15, 26, 0.95);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.3);
+            z-index: 9999;
+            max-width: 280px;
+            width: 90%;
+            transition: opacity 0.3s ease;
+        }
+
+        .add-to-home.hidden {
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .a2hs-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+
+        .a2hs-title {
+            color: #FAFAF9;
+            font-size: 1.1rem;
+            font-weight: bold;
+        }
+
+        .a2hs-close {
+            background: none;
+            border: none;
+            color: #FAFAF9;
+            font-size: 1.1rem;
+            padding: 4px;
+            cursor: pointer;
+            opacity: 0.7;
+        }
+
+        .a2hs-instructions {
+            display: none;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .instruction-step {
+            color: #FAFAF9;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .share-icon, .add-icon, .menu-icon {
+            color: #FAFAF9;
+            vertical-align: middle;
+        }
+
+        .a2hs-arrow {
+            color: rgba(11, 15, 26, 0.95);
+            font-size: 1.5rem;
+            position: absolute;
+            bottom: -20px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .legs-selector {
+            display: flex;
+            background: #0B0F1A;
+            border: 1px solid #5F7470;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+
+        .leg-button {
+            flex: 1;
+            padding: 8px 0;
+            border: none;
+            background: transparent;
+            color: #5F7470;
+            font-size: 0.9rem;
+            cursor: pointer;
+            border-right: 1px solid #5F7470;
+            transition: background-color 0.2s ease;
+        }
+
+        .leg-button:last-child {
+            border-right: none;
+        }
+
+        .leg-button.active {
+            background-color: #5F7470 !important;
+            color: #FAFAF9 !important;
+        }
+
+        .time-controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: space-between;
+        }
+
+        .time-input {
+            flex: 0 1 auto;
+        }
+
+        .time-input input[type="text"] {
+            width: 80px;
+            text-align: center;
+        }
+
+        .compare-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .compare-toggle {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 24px;
+        }
+
+        .compare-toggle input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #0B0F1A;
+            border: 1px solid #5F7470;
+            transition: .4s;
+            border-radius: 24px;
+        }
+
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 16px;
+            width: 16px;
+            left: 3px;
+            bottom: 3px;
+            background-color: #5F7470;
+            transition: .4s;
+            border-radius: 50%;
+        }
+
+        .compare-toggle input:checked + .toggle-slider {
+            background-color: #5F7470;
+        }
+
+        .compare-toggle input:checked + .toggle-slider:before {
+            transform: translateX(20px);
+            background-color: #FAFAF9;
+        }
+
+        .comparison-amount {
+            margin-top: 0.5rem;
+            padding: 0.5rem;
+            border: 1px solid #FAFAF9;
+            border-radius: 0.25rem;
+            font-size: 0.875rem;
+            text-align: center;
+            font-weight: bold;
+            width: 200px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .comparison-text {
+            font-size: 0.875rem;
+            text-align: center;
+            color: #FAFAF9;
+            opacity: 0.8;
+            margin-top: 0.25rem;
+        }
+
+        .advanced-btn {
+            width: 100%;
+            padding: 0.75rem 0;
+            background: #0B0F1A;
+            border-radius: 0.375rem;
+            font-weight: bold;
+            cursor: pointer;
+            height: 45px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s ease;
+            margin-bottom: 0;
+            border: 2px solid #5F7470;
+            color: #5F7470;
+            position: relative;
+            z-index: 2;
+            border-bottom-width: 1px;
+        }
+
+        #advancedControls {
+            background: #0B0F1A;
+            border: 2px solid #5F7470;
+            border-top: none;
+            border-radius: 0 0 0.375rem 0.375rem;
+            padding: 1rem;
+            margin-top: -2px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .advanced-btn.open {
+            border-bottom-left-radius: 0;
+            border-bottom-right-radius: 0;
+        }
+    </style>
 </head>
 <body>
-
-<header>G4 Pay Timer</header>
-
-<div class="container">
-  <div class="output-container">
-    <div class="label">Earned:</div>
-    <div class="amount" id="earnedAmount"><span class="dollars">$0</span><span class="cents">.00</span></div>
-    <div class="last-run" id="lastRunDisplay" style="display:none;">Last: $0.00</div>
-  </div>
-
-  <div class="input-group">
-    <label for="position">Position:</label>
-    <select id="position">
-      <option value="">Select Position</option>
-      <option value="captain">Captain</option>
-      <option value="fo">First Officer</option>
-    </select>
-  </div>
-
-  <div class="input-group">
-    <label for="year">Year:</label>
-    <select id="year">
-      <option value="">Select Year</option>
-    </select>
-  </div>
-
-  <div class="input-group">
-    <label>Modifiers:</label>
-    <div class="modifier-group">
-      <label><input type="checkbox" id="vfn">VFN (2x)</label>
-      <label><input type="checkbox" id="premium">Premium (1.3x)</label>
+    <div id="addToHomeScreen" class="add-to-home hidden">
+        <div class="a2hs-content">
+            <div class="a2hs-header">
+                <div class="a2hs-title">Install App</div>
+                <button class="a2hs-close">✕</button>
+            </div>
+            <!-- iOS Instructions -->
+            <div class="a2hs-instructions ios-instructions">
+                <div class="instruction-step">
+                    1. Tap <svg class="share-icon" viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M13 5.41V17a1 1 0 0 1-2 0V5.41l-3.3 3.3a1 1 0 0 1-1.4-1.42l5-5a1 1 0 0 1 1.4 0l5 5a1 1 0 1 1-1.4 1.42L13 5.4z"/>
+                        <path fill="currentColor" d="M3 12a1 1 0 0 1 2 0v7a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-7a1 1 0 0 1 2 0v7a3 3 0 0 1-3 3H6a3 3 0 0 1-3-3v-7z"/>
+                    </svg> below
+                </div>
+                <div class="instruction-step">
+                    2. Select <svg class="add-icon" viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M17,13H13V17H11V13H7V11H11V7H13V11H17V13Z"/>
+                        <rect fill="none" stroke="currentColor" x="3" y="3" width="18" height="18" rx="4"/>
+                    </svg> Add to Home Screen
+                </div>
+            </div>
+            <!-- Android Instructions -->
+            <div class="a2hs-instructions android-instructions">
+                <div class="instruction-step">
+                    1. Tap <svg class="menu-icon" viewBox="0 0 24 24" width="18" height="18">
+                        <path fill="currentColor" d="M12,16A2,2 0 0,1 14,18A2,2 0 0,1 12,20A2,2 0 0,1 10,18A2,2 0 0,1 12,16M12,10A2,2 0 0,1 14,12A2,2 0 0,1 12,14A2,2 0 0,1 10,12A2,2 0 0,1 12,10M12,4A2,2 0 0,1 14,6A2,2 0 0,1 12,8A2,2 0 0,1 10,6A2,2 0 0,1 12,4Z"/>
+                    </svg> menu
+                </div>
+                <div class="instruction-step">
+                    2. Tap Install App
+                </div>
+            </div>
+        </div>
+        <div class="a2hs-arrow">▼</div>
     </div>
-  </div>
+    <div class="container">
+        <div class="top-content">
+            <div class="earnings-display">
+                <div id="earnings">
+                    <span class="dollars">$0</span><span class="cents">.00</span>
+                </div>
+                <div class="last-amounts"></div>
+            </div>
+            
+            <div class="info-boxes">
+                <div class="info-box double-stack">
+                    <div class="stack-item">
+                        <div id="timer">00:00:00</div>
+                    </div>
+                    <div class="stack-item">
+                        <div id="rate">$0.00/hr</div>
+                    </div>
+                </div>
+                <div class="info-box">
+                    <div class="time-status-box">
+                        <div class="time-status">
+                            <div class="status-icon play-icon"></div>
+                            <div class="time-placeholder">:</div>
+                        </div>
+                        <div class="time-status">
+                            <div class="status-icon stop-icon"></div>
+                            <div class="time-placeholder">:</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-  <div class="controls">
-    <button id="startBtn">Start</button>
-    <button id="stopBtn" class="stop-btn" disabled>Stop</button>
-    <button id="resetBtn" class="reset-btn" disabled>Reset</button>
-  </div>
+        <div class="bottom-controls">
+            <div class="top-buttons">
+                <button id="captainBtn" class="position-btn">CA</button>
+                <button id="foBtn" class="position-btn">FO</button>
+                <select id="year" class="year-select">
+                    <option value="1">Year 1</option>
+                    <option value="2">Year 2</option>
+                    <option value="3">Year 3</option>
+                    <option value="4">Year 4</option>
+                    <option value="5">Year 5</option>
+                    <option value="6">Year 6</option>
+                    <option value="7">Year 7</option>
+                    <option value="8">Year 8</option>
+                    <option value="9">Year 9</option>
+                    <option value="10">Year 10</option>
+                    <option value="11">Year 11</option>
+                    <option value="12">Year 12</option>
+                </select>
+                <button id="premiumBtn" class="modifier-btn">PREM</button>
+                <button id="vfnBtn" class="modifier-btn">VFN</button>
+            </div>
 
-  <details>
-    <summary>Advanced</summary>
-    <div class="advanced-group">
-      <div>
-        <label for="manualStartTime">Manual Start Time:</label>
-        <input type="time" id="manualStartTime">
-      </div>
-      <div>
-        <label for="manualStopTime">Manual Stop Time:</label>
-        <input type="time" id="manualStopTime">
-      </div>
-      <button id="applyAdvancedBtn">Apply Adjustments</button>
+            <div class="controls">
+                <button id="advancedBtn" class="advanced-btn">Show Advanced Controls</button>
+            </div>
+
+            <div id="advancedControls" style="display: none;">
+                <div class="input-group">
+                    <label>Total Legs</label>
+                    <div class="legs-selector">
+                        <button class="leg-button" data-legs="1">1</button>
+                        <button class="leg-button" data-legs="2">2</button>
+                        <button class="leg-button" data-legs="3">3</button>
+                        <button class="leg-button" data-legs="4">4</button>
+                        <button class="leg-button" data-legs="5">5</button>
+                        <button class="leg-button" data-legs="6">6</button>
+                        <button class="leg-button" data-legs="7">7</button>
+                        <button class="leg-button" data-legs="8">8</button>
+                    </div>
+                </div>
+
+                <div class="input-group time-controls">
+                    <div class="time-input">
+                        <label>Start Time</label>
+                        <div class="input-with-button">
+                            <input type="text" id="startTime" placeholder="HHMM" maxlength="4">
+                            <button id="applyStartTime" class="apply-btn">Apply</button>
+                        </div>
+                    </div>
+                    <div class="time-input">
+                        <label>End Time</label>
+                        <div class="input-with-button">
+                            <input type="text" id="endTime" placeholder="HHMM" maxlength="4">
+                            <button id="applyEndTime" class="apply-btn">Apply</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Custom Rate</label>
+                    <div class="input-with-button">
+                        <input type="number" id="customRate" placeholder="0.00" step="0.01" min="0">
+                        <button id="applyCustomRate" class="apply-btn">Apply</button>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="compare-header">
+                        <label>Compare Rate</label>
+                        <label class="compare-toggle">
+                            <input type="checkbox" id="compareToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                    <div class="input-with-button">
+                        <input type="number" id="compareRate" placeholder="0.00" step="0.01" min="0" disabled>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <div class="compare-header">
+                        <label>Per Day Mode</label>
+                        <label class="compare-toggle">
+                            <input type="checkbox" id="perDayToggle">
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="button-group">
+                <button id="startBtn" class="action-btn">START</button>
+                <button id="stopBtn" class="action-btn" disabled>STOP</button>
+                <button id="resetBtn" class="action-btn">RESET</button>
+            </div>
+        </div>
     </div>
-  </details>
-</div>
+    <script>
+        const payRates = {
+            Captain: {
+                1: 163.29, 2: 171.42, 3: 178.27, 4: 185.36, 
+                5: 192.76, 6: 198.54, 7: 204.49, 8: 210.60,
+                9: 215.85, 10: 221.24, 11: 225.65, 12: 232.00
+            },
+            FO: {
+                1: 57.67, 2: 103.07, 3: 110.73, 4: 116.99,
+                5: 123.56, 6: 129.24, 7: 135.13, 8: 139.19,
+                9: 144.80, 10: 148.39, 11: 151.35, 12: 155.61
+            }
+        };
 
-<script>
+        let isRunning = false;
+        let hasTimerRun = false;
+        let manualStopApplied = false;
+        let startTimestamp = null;
+        let time = 0;
+        let earnings = 0;
+        let timerInterval;
+        let legAmounts = [];
+        let shouldResetLegs = false;
+        let maxLegs = 4; // Default value
+        let customPayRate = null;
 
-const captainPayScale = {
-  1: 163.29,
-  2: 171.42,
-  3: 178.27,
-  4: 185.36,
-  5: 192.76,
-  6: 198.54,
-  7: 204.49,
-  8: 210.60,
-  9: 215.85,
-  10: 221.24,
-  11: 225.65,
-  12: 232.00
-};
+        // Add color palette for leg numbers
+        const legColors = [
+            '#99AA38', // Green from start button
+            '#A33B20', // Red from stop button
+            '#D17B0F', // Orange from reset button
+            '#628395', // Blue from premium button
+            '#5F7470', // Gray from CA/FO buttons
+            '#DD4B42'  // Red from VFN button
+        ];
 
-const foPayScale = {
-  1: 57.67,
-  2: 103.07,
-  3: 110.73,
-  4: 116.99,
-  5: 123.56,
-  6: 129.24,
-  7: 135.13,
-  8: 139.19,
-  9: 144.80,
-  10: 148.39,
-  11: 151.35,
-  12: 155.61
-};
+        // Store leg colors persistently
+        let legColorAssignments = [];
 
-const positionSelect = document.getElementById('position');
-const yearSelect = document.getElementById('year');
-const vfnCheckbox = document.getElementById('vfn');
-const premiumCheckbox = document.getElementById('premium');
+        function getNewLegColor() {
+            const unusedColors = legColors.filter(color => !legColorAssignments.includes(color));
+            if (unusedColors.length === 0) {
+                // If all colors are used, start over with the full palette
+                return legColors[legColorAssignments.length % legColors.length];
+            }
+            return unusedColors[Math.floor(Math.random() * unusedColors.length)];
+        }
 
-const startBtn = document.getElementById('startBtn');
-const stopBtn = document.getElementById('stopBtn');
-const resetBtn = document.getElementById('resetBtn');
-const earnedAmount = document.getElementById('earnedAmount');
-const lastRunDisplay = document.getElementById('lastRunDisplay');
+        function formatTime(seconds) {
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+        }
 
-const manualStartTimeInput = document.getElementById('manualStartTime');
-const manualStopTimeInput = document.getElementById('manualStopTime');
-const applyAdvancedBtn = document.getElementById('applyAdvancedBtn');
+        function getCurrentRate() {
+            if (customPayRate !== null) {
+                return customPayRate;
+            }
 
-let interval = null;
-let startTime = 0;
-let elapsedSeconds = 0;
-let hourlyWage = 0;
-let timerRunning = false;
+            const isCaptain = document.getElementById('captainBtn').classList.contains('active');
+            const year = parseInt(document.getElementById('year').value);
+            const isPremium = document.getElementById('premiumBtn').classList.contains('active');
+            const isVfn = document.getElementById('vfnBtn').classList.contains('active');
+            
+            let rate = isCaptain ? payRates.Captain[year] : payRates.FO[year];
+            
+            if (isVfn) {
+                rate *= 2.0;
+            } else if (isPremium) {
+                rate *= 1.3;
+            }
+            
+            return rate;
+        }
 
-function updateGlow(hundredMark) {
-  const maxIncrements = 50;
-  const effectiveIncrements = Math.min(hundredMark, maxIncrements);
-  const blur = effectiveIncrements * 0.2; // 0.2px per $100
-  if (blur > 0) {
-    earnedAmount.style.textShadow = `0 0 ${blur}px rgba(28,60,90,0.4)`;
-  } else {
-    earnedAmount.style.textShadow = 'none';
-  }
-}
+        function updateDisplay() {
+            const rate = getCurrentRate();
+            document.getElementById('rate').textContent = `$${rate.toFixed(2)}/hr`;
+            
+            if (hasTimerRun) {
+                const [dollars, cents] = earnings.toFixed(2).split('.');
+                document.getElementById('earnings').innerHTML = 
+                    `<span class="dollars">$${dollars}</span><span class="cents">.${cents}</span>`;
+                document.getElementById('timer').textContent = formatTime(time);
+                updateComparisonDisplay();
+            }
+        }
 
-function populateYearDropdown(pos) {
-  yearSelect.innerHTML = '<option value="">Select Year</option>';
-  let scale = (pos === 'captain') ? captainPayScale : foPayScale;
-  for (let yr = 1; yr <= 12; yr++) {
-    const pay = scale[yr];
-    const option = document.createElement('option');
-    option.value = yr.toString();
-    option.textContent = `Year ${yr} ($${pay})`;
-    yearSelect.appendChild(option);
-  }
-}
+        function updateLegDisplay() {
+            const lastAmountsContainer = document.querySelector('.last-amounts');
+            let html = '';
+            
+            // Display all stored legs
+            for (let i = 0; i < legAmounts.length; i++) {
+                // Ensure we have a color for this leg
+                while (legColorAssignments.length <= i) {
+                    legColorAssignments.push(getNewLegColor());
+                }
+                
+                // Round each leg amount to 2 decimal places
+                const roundedAmount = Math.round(legAmounts[i] * 100) / 100;
+                
+                html += `
+                    <div class="last-amount">
+                        <div class="leg-number" style="background-color: ${legColorAssignments[i]}">
+                            ${i + 1}
+                        </div>
+                        $${roundedAmount.toFixed(2)}
+                    </div>`;
+            }
+            lastAmountsContainer.innerHTML = html;
 
-function getHourlyWage() {
-  const pos = positionSelect.value;
-  const yr = yearSelect.value;
-  if (!pos || !yr) return 0;
-  let basePay = (pos === 'captain') ? captainPayScale[yr] : foPayScale[yr];
+            // Calculate and display total only if we have more than one leg or a completed leg plus running timer
+            const existingTotal = document.querySelector('.total-amount');
+            if (existingTotal) {
+                existingTotal.remove();
+            }
 
-  let multiplier = 1.0;
-  if (vfnCheckbox.checked) multiplier = 2.0;
-  else if (premiumCheckbox.checked) multiplier = 1.3;
+            // Only show total if we have at least one completed leg AND either a second leg is completed or running
+            if (legAmounts.length > 1 || (legAmounts.length === 1 && isRunning)) {
+                // Sum up completed legs with proper rounding
+                const completedTotal = legAmounts.reduce((sum, amount) => {
+                    return sum + Math.round(amount * 100) / 100;
+                }, 0);
+                
+                // Add current earnings if timer is running (already rounded in the display)
+                const currentAmount = isRunning ? Math.round(earnings * 100) / 100 : 0;
+                
+                // Calculate final total with one final rounding
+                const total = Math.round((completedTotal + currentAmount) * 100) / 100;
+                
+                lastAmountsContainer.insertAdjacentHTML('afterend', 
+                    `<div class="total-amount">Total: $${total.toFixed(2)}</div>`);
+            }
+        }
 
-  return basePay * multiplier;
-}
+        function startTimer() {
+            if (!startTimestamp) {
+                startTimestamp = Date.now() - (time * 1000);
+            }
+            
+            timerInterval = setInterval(() => {
+                time = Math.floor((Date.now() - startTimestamp) / 1000);
+                earnings = (time / 3600) * getCurrentRate();
+                updateDisplay();
+                updateLegDisplay();
+            }, 1000);
 
-function formatEarnings(earnings) {
-  const amt = earnings.toFixed(2);
-  const [whole, dec] = amt.split('.');
-  const wholeFormatted = Number(whole).toLocaleString();
-  return { whole: wholeFormatted, dec };
-}
+            const now = new Date();
+            const startHours = String(now.getUTCHours()).padStart(2, '0');
+            const startMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+            
+            document.querySelector('.time-status:first-child .time-placeholder').textContent = 
+                `${startHours}:${startMinutes}`;
+            document.getElementById('startTime').value = `${startHours}${startMinutes}`;
+        }
 
-function updateEarnings() {
-  hourlyWage = getHourlyWage();
-  const earnings = (hourlyWage / 3600) * elapsedSeconds;
-  const { whole, dec } = formatEarnings(earnings);
+        function stopTimer() {
+            clearInterval(timerInterval);
+            
+            const now = new Date();
+            const stopHours = String(now.getUTCHours()).padStart(2, '0');
+            const stopMinutes = String(now.getUTCMinutes()).padStart(2, '0');
+            
+            document.querySelector('.time-status:last-child .time-placeholder').textContent = 
+                `${stopHours}:${stopMinutes}`;
+            document.getElementById('endTime').value = `${stopHours}${stopMinutes}`;
+        }
+        document.getElementById('startBtn').addEventListener('click', () => {
+            if (shouldResetLegs) {
+                legAmounts = [];
+                legColorAssignments = []; // Clear color assignments
+                shouldResetLegs = false;
+            }
 
-  earnedAmount.innerHTML = `<span class="dollars">$${whole}</span><span class="cents">.${dec}</span>`;
+            isRunning = true;
+            hasTimerRun = true;
+            document.getElementById('startBtn').disabled = true;
+            document.getElementById('startBtn').classList.add('running');
+            document.getElementById('stopBtn').disabled = false;
+            document.getElementById('stopBtn').classList.remove('stopped');
+            startTimer();
+            updateAdvancedControlsState();
+            updateLegDisplay(); // Update display to show total if needed
+        });
 
-  const hundredMark = Math.floor(earnings / 100);
-  updateGlow(hundredMark);
-}
+        document.getElementById('stopBtn').addEventListener('click', () => {
+            isRunning = false;
+            document.getElementById('startBtn').disabled = false;
+            document.getElementById('startBtn').classList.remove('running');
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('stopBtn').classList.add('stopped');
+            stopTimer();
+            updateAdvancedControlsState();
+        });
 
-positionSelect.addEventListener('change', () => {
-  const pos = positionSelect.value;
-  if (pos) {
-    populateYearDropdown(pos);
-  } else {
-    yearSelect.innerHTML = '<option value="">Select Year</option>';
-  }
-});
+        document.getElementById('resetBtn').addEventListener('click', function() {
+            if (hasTimerRun && earnings > 0) {
+                // Store the exact current earnings amount, rounded to 2 decimal places
+                const exactAmount = Math.round((time / 3600) * getCurrentRate() * 100) / 100;
+                legAmounts.push(exactAmount);
+                
+                if (legAmounts.length >= maxLegs) {
+                    shouldResetLegs = true;
+                }
+            }
+            
+            // Reset all timer-related states
+            isRunning = false;
+            hasTimerRun = false;
+            manualStopApplied = false;
+            startTimestamp = null;
+            time = 0;
+            earnings = 0;
+            clearInterval(timerInterval);
+            
+            // Reset displays
+            document.getElementById('earnings').innerHTML = '<span class="dollars">$0</span><span class="cents">.00</span>';
+            document.getElementById('timer').textContent = '00:00:00';
+            document.querySelector('.time-status:first-child .time-placeholder').textContent = ':';
+            document.querySelector('.time-status:last-child .time-placeholder').textContent = ':';
+            
+            document.getElementById('startBtn').classList.remove('running');
+            document.getElementById('stopBtn').classList.remove('stopped');
+            document.getElementById('stopBtn').disabled = true;
+            document.getElementById('resetBtn').disabled = false;
+            
+            // Update displays
+            updateLegDisplay();
+            updateDisplay();
+            updateAdvancedControlsState();
+            
+            const resetBtn = document.getElementById('resetBtn');
+            resetBtn.classList.add('pressed');
+            setTimeout(() => resetBtn.classList.remove('pressed'), 300);
+        });
 
-vfnCheckbox.addEventListener('change', () => {
-  if (vfnCheckbox.checked) {
-    premiumCheckbox.checked = false;
-  }
-  if (interval) updateEarnings();
-});
+        document.getElementById('captainBtn').addEventListener('click', function() {
+            if (!this.classList.contains('active')) {
+                this.classList.add('active');
+                document.getElementById('foBtn').classList.remove('active');
+                customPayRate = null; // Clear custom rate
+                document.getElementById('customRate').value = ''; // Clear input
+                updateDisplay();
+            }
+        });
 
-premiumCheckbox.addEventListener('change', () => {
-  if (premiumCheckbox.checked) {
-    vfnCheckbox.checked = false;
-  }
-  if (interval) updateEarnings();
-});
+        document.getElementById('foBtn').addEventListener('click', function() {
+            if (!this.classList.contains('active')) {
+                this.classList.add('active');
+                document.getElementById('captainBtn').classList.remove('active');
+                customPayRate = null; // Clear custom rate
+                document.getElementById('customRate').value = ''; // Clear input
+                updateDisplay();
+            }
+        });
 
-startBtn.addEventListener('click', () => {
-  if (!positionSelect.value) {
-    alert('Please select a position.');
-    return;
-  }
-  if (!yearSelect.value) {
-    alert('Please select the year.');
-    return;
-  }
+        document.getElementById('year').addEventListener('change', updateDisplay);
 
-  hourlyWage = getHourlyWage();
-  if (hourlyWage <= 0) {
-    alert('Invalid pay scale selection. Please try again.');
-    return;
-  }
+        document.getElementById('premiumBtn').addEventListener('click', function() {
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+            } else {
+                this.classList.add('active');
+                document.getElementById('vfnBtn').classList.remove('active');
+            }
+            updateDisplay();
+        });
 
-  startTime = (Date.now() / 1000) - elapsedSeconds;
-  if (!interval) {
-    interval = setInterval(() => {
-      elapsedSeconds = Math.floor((Date.now() / 1000) - startTime);
-      updateEarnings();
-    }, 1000);
-    timerRunning = true;
-  }
+        document.getElementById('vfnBtn').addEventListener('click', function() {
+            if (this.classList.contains('active')) {
+                this.classList.remove('active');
+            } else {
+                this.classList.add('active');
+                document.getElementById('premiumBtn').classList.remove('active');
+            }
+            updateDisplay();
+        });
 
-  startBtn.disabled = true;
-  stopBtn.disabled = false;
-  resetBtn.disabled = false;
-  positionSelect.disabled = true;
-  yearSelect.disabled = true;
-  vfnCheckbox.disabled = true;
-  premiumCheckbox.disabled = true;
-});
+        document.getElementById('advancedBtn').addEventListener('click', function() {
+            const advancedControls = document.getElementById('advancedControls');
+            const isHidden = advancedControls.style.display === 'none';
+            advancedControls.style.display = isHidden ? 'block' : 'none';
+            this.textContent = isHidden ? 'Hide Advanced Controls' : 'Show Advanced Controls';
+            this.classList.toggle('open', isHidden);
+        });
 
-stopBtn.addEventListener('click', () => {
-  if (interval) {
-    clearInterval(interval);
-    interval = null;
-    timerRunning = false;
-  }
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-});
+        document.getElementById('applyStartTime').addEventListener('click', function() {
+            const startInput = document.getElementById('startTime').value;
+            
+            if (!/^\d{4}$/.test(startInput)) {
+                alert('Please enter time in HHMM format');
+                return;
+            }
 
-resetBtn.addEventListener('click', () => {
-  const earnings = (hourlyWage / 3600) * elapsedSeconds;
-  lastRunDisplay.textContent = 'Last: $' + earnings.toFixed(2);
-  lastRunDisplay.style.display = 'block';
+            const startHours = parseInt(startInput.substring(0,2));
+            const startMinutes = parseInt(startInput.substring(2));
+            
+            if (startHours > 23 || startMinutes > 59) {
+                alert('Invalid time format');
+                return;
+            }
 
-  if (interval) {
-    clearInterval(interval);
-    interval = null;
-  }
-  elapsedSeconds = 0;
-  updateEarnings();
+            const formattedTime = `${String(startHours).padStart(2, '0')}:${String(startMinutes).padStart(2, '0')}`;
+            document.querySelector('.time-status:first-child .time-placeholder').textContent = formattedTime;
 
-  timerRunning = false;
+            const now = new Date();
+            startTimestamp = new Date(Date.UTC(
+                now.getUTCFullYear(),
+                now.getUTCMonth(),
+                now.getUTCDate(),
+                startHours,
+                startMinutes,
+                0,
+                0
+            )).getTime();
+        });
 
-  startBtn.disabled = false;
-  stopBtn.disabled = true;
-  resetBtn.disabled = true;
+        document.getElementById('applyEndTime').addEventListener('click', function() {
+            if (isRunning) {
+                alert('Stop the timer first to apply manual stop time');
+                return;
+            }
 
-  positionSelect.disabled = false;
-  yearSelect.disabled = false;
-  vfnCheckbox.disabled = false;
-  premiumCheckbox.disabled = false;
+            const endInput = document.getElementById('endTime').value;
+            
+            if (!/^\d{4}$/.test(endInput)) {
+                alert('Please enter time in HHMM format');
+                return;
+            }
 
-  earnedAmount.style.textShadow = 'none';
-});
+            const startTimeDisplay = document.querySelector('.time-status:first-child .time-placeholder').textContent;
+            const startMatch = startTimeDisplay.match(/(\d{2}):(\d{2})/);
+            
+            if (!startMatch || startTimeDisplay === ':') {
+                alert('Could not determine start time');
+                return;
+            }
 
-function combineTodayWithTime(timestr) {
-  if (!timestr) return null;
-  const today = new Date();
-  const [hh, mm] = timestr.split(':');
-  if (hh === undefined || mm === undefined) return null;
-  today.setHours(parseInt(hh,10), parseInt(mm,10), 0, 0);
-  return today;
-}
+            const startHours = parseInt(startMatch[1]);
+            const startMinutes = parseInt(startMatch[2]);
+            const endHours = parseInt(endInput.substring(0,2));
+            const endMinutes = parseInt(endInput.substring(2));
+            
+            if (endHours > 23 || endMinutes > 59) {
+                alert('Invalid time format');
+                return;
+            }
 
-applyAdvancedBtn.addEventListener('click', () => {
-  const manualStart = manualStartTimeInput.value;
-  const manualStop = manualStopTimeInput.value;
+            const formattedEndTime = `${String(endHours).padStart(2, '0')}:${String(endMinutes).padStart(2, '0')}`;
+            document.querySelector('.time-status:last-child .time-placeholder').textContent = formattedEndTime;
 
-  let startTimestamp = null;
-  let stopTimestamp = null;
+            const startMinutesSinceMidnight = (startHours * 60) + startMinutes;
+            const endMinutesSinceMidnight = (endHours * 60) + endMinutes;
 
-  if (manualStart) {
-    let startDate = combineTodayWithTime(manualStart);
-    if (startDate && !isNaN(startDate.getTime())) {
-      startTimestamp = startDate.getTime() / 1000;
-    }
-  }
+            let elapsedMinutes = endMinutesSinceMidnight - startMinutesSinceMidnight;
+            if (elapsedMinutes < 0) {
+                elapsedMinutes += 24 * 60;
+            }
 
-  if (manualStop) {
-    let stopDate = combineTodayWithTime(manualStop);
-    if (stopDate && !isNaN(stopDate.getTime())) {
-      stopTimestamp = stopDate.getTime() / 1000;
-    }
-  }
+            time = elapsedMinutes * 60;
+            earnings = (elapsedMinutes / 60) * getCurrentRate();
+            
+            document.getElementById('timer').textContent = formatTime(time);
+            const [dollars, cents] = earnings.toFixed(2).split('.');
+            document.getElementById('earnings').innerHTML = 
+                `<span class="dollars">$${dollars}</span><span class="cents">.${cents}</span>`;
+            
+            manualStopApplied = true;
+            updateAdvancedControlsState();
+        });
 
-  if (startTimestamp !== null) {
-    if (timerRunning) {
-      const nowSec = Date.now() / 1000;
-      elapsedSeconds = Math.max(0, Math.floor(nowSec - startTimestamp));
-      startTime = startTimestamp;
-    } else {
-      startTime = startTimestamp;
-      if (stopTimestamp !== null && stopTimestamp >= startTime) {
-        elapsedSeconds = Math.max(0, Math.floor(stopTimestamp - startTime));
-      }
-    }
-  } else {
-    if (!timerRunning && stopTimestamp !== null && startTime !== 0) {
-      if (stopTimestamp > startTime) {
-        elapsedSeconds = Math.floor(stopTimestamp - startTime);
-      } else {
-        elapsedSeconds = 0;
-      }
-    }
-  }
+        function updateAdvancedControlsState() {
+            const startTimeInput = document.getElementById('startTime');
+            const endTimeInput = document.getElementById('endTime');
+            const applyStartBtn = document.getElementById('applyStartTime');
+            const applyEndBtn = document.getElementById('applyEndTime');
 
-  updateEarnings();
-});
-</script>
+            startTimeInput.disabled = !isRunning;
+            applyStartBtn.disabled = !isRunning || startTimeInput.value.length !== 4;
+
+            endTimeInput.disabled = isRunning || !hasTimerRun;
+            applyEndBtn.disabled = isRunning || !hasTimerRun || endTimeInput.value.length !== 4;
+
+            [startTimeInput, applyStartBtn, endTimeInput, applyEndBtn].forEach(element => {
+                if (element.disabled) {
+                    element.style.opacity = '0.5';
+                    element.style.cursor = 'not-allowed';
+                } else {
+                    element.style.opacity = '1';
+                    element.style.cursor = 'pointer';
+                }
+            });
+
+            document.getElementById('startBtn').disabled = isRunning || manualStopApplied;
+        }
+
+        document.getElementById('startTime').addEventListener('input', updateAdvancedControlsState);
+        document.getElementById('endTime').addEventListener('input', updateAdvancedControlsState);
+
+        // Initialize
+        document.getElementById('captainBtn').classList.add('active');
+        updateDisplay();
+        updateAdvancedControlsState();
+
+        // Service Worker Registration
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('sw.js')
+                    .then(registration => {
+                        console.log('ServiceWorker registration successful');
+                    })
+                    .catch(err => {
+                        console.log('ServiceWorker registration failed: ', err);
+                    });
+            });
+        }
+
+        document.getElementById('applyCustomRate').addEventListener('click', function() {
+            const customRateInput = document.getElementById('customRate');
+            const newRate = parseFloat(customRateInput.value);
+            
+            if (newRate > 0) {
+                customPayRate = newRate;
+                // Deselect both CA and FO buttons
+                document.getElementById('captainBtn').classList.remove('active');
+                document.getElementById('foBtn').classList.remove('active');
+                updateDisplay();
+            } else if (customRateInput.value === '') {
+                customPayRate = null;
+                updateDisplay();
+            } else {
+                alert('Please enter a valid pay rate');
+                customRateInput.value = customPayRate || '';
+            }
+        });
+
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches) {
+                document.body.classList.add('standalone');
+            } else {
+                document.body.classList.add('in-browser');
+            }
+
+            // Initialize leg selection
+            maxLegs = 4;
+            const defaultLegButton = document.querySelector('.leg-button[data-legs="4"]');
+            if (defaultLegButton) {
+                defaultLegButton.classList.add('active');
+            }
+
+            // Add click handlers for leg buttons
+            document.querySelectorAll('.leg-button').forEach(button => {
+                button.addEventListener('click', () => {
+                    document.querySelectorAll('.leg-button').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    button.classList.add('active');
+                    maxLegs = parseInt(button.dataset.legs);
+                    
+                    // If we have more legs than the new max, set the reset flag
+                    if (legAmounts.length >= maxLegs) {
+                        shouldResetLegs = true;
+                    }
+                    
+                    // Update the display to reflect any changes
+                    updateLegDisplay();
+                });
+            });
+
+            showAddToHomeScreen();
+        });
+
+        function showAddToHomeScreen() {
+            const prompt = document.getElementById('addToHomeScreen');
+            const isIOS = /iphone|ipad|ipod/.test(window.navigator.userAgent.toLowerCase());
+            const isAndroid = /android/.test(window.navigator.userAgent.toLowerCase());
+            const isStandalone = window.navigator.standalone || window.matchMedia('(display-mode: standalone)').matches;
+            const promptDismissed = localStorage.getItem('a2hsPromptDismissed');
+            
+            if ((isIOS || isAndroid) && !isStandalone && !promptDismissed) {
+                // Show OS-specific instructions
+                const iosInstructions = prompt.querySelector('.ios-instructions');
+                const androidInstructions = prompt.querySelector('.android-instructions');
+                
+                if (isIOS) {
+                    iosInstructions.style.display = 'flex';
+                    androidInstructions.style.display = 'none';
+                } else if (isAndroid) {
+                    iosInstructions.style.display = 'none';
+                    androidInstructions.style.display = 'flex';
+                }
+                
+                // Delay showing the prompt
+                setTimeout(() => {
+                    prompt.classList.remove('hidden');
+                }, 2000);
+            }
+        }
+
+        // Handle close button
+        document.querySelector('.a2hs-close')?.addEventListener('click', () => {
+            document.getElementById('addToHomeScreen').classList.add('hidden');
+            localStorage.setItem('a2hsPromptDismissed', 'true');
+        });
+
+        // Add this function to calculate comparison amounts
+        function updateComparisonDisplay() {
+            const compareRate = parseFloat(document.getElementById('compareRate').value) || 0;
+            const isPerDayMode = document.getElementById('perDayToggle').checked;
+            
+            const existingComparisons = document.querySelectorAll('.comparison-amount, .comparison-text');
+            existingComparisons.forEach(comp => comp.remove());
+            
+            if (compareRate > 0 && document.getElementById('compareToggle').checked) {
+                // Calculate comparison for current leg
+                const currentCompare = (time / 3600) * compareRate;
+                
+                if (isPerDayMode) {
+                    // Per Day Mode: Sum all legs together
+                    const completedLegsCompare = legAmounts.length > 0 ? 
+                        legAmounts.reduce((sum, amount) => {
+                            const legTime = (amount / getCurrentRate()) * 3600;
+                            return sum + ((legTime / 3600) * compareRate);
+                        }, 0) : 0;
+                    
+                    const totalCompare = completedLegsCompare + (hasTimerRun ? currentCompare : 0);
+                    
+                    // Add total comparison amount after the total amount
+                    const totalAmount = document.querySelector('.total-amount');
+                    if (totalAmount) {
+                        totalAmount.insertAdjacentHTML('afterend', 
+                            `<div class="comparison-amount">Compare Day Total: $${totalCompare.toFixed(2)}</div>`);
+                    }
+                } else {
+                    // Per Leg Mode: Show simple text comparison below current earnings
+                    const earningsDisplay = document.getElementById('earnings');
+                    if (earningsDisplay) {
+                        earningsDisplay.insertAdjacentHTML('afterend', 
+                            `<div class="comparison-text">Compare: $${currentCompare.toFixed(2)}</div>`);
+                    }
+                }
+            }
+        }
+
+        // Add these event listeners
+        document.getElementById('compareToggle').addEventListener('change', function() {
+            const compareRate = document.getElementById('compareRate');
+            compareRate.disabled = !this.checked;
+            if (this.checked) {
+                updateComparisonDisplay();
+            } else {
+                const existingComparison = document.querySelector('.comparison-amount');
+                if (existingComparison) {
+                    existingComparison.remove();
+                }
+            }
+        });
+
+        document.getElementById('compareRate').addEventListener('input', function() {
+            if (document.getElementById('compareToggle').checked) {
+                updateComparisonDisplay();
+            }
+        });
+
+        // Add event listener for the per day toggle
+        document.getElementById('perDayToggle').addEventListener('change', function() {
+            if (document.getElementById('compareToggle').checked) {
+                updateComparisonDisplay();
+            }
+        });
+    </script>
 </body>
 </html>
