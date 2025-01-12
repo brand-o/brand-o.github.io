@@ -315,13 +315,17 @@
         }
 
         .apply-btn {
-            padding: 0.75rem 1.5rem;
+            padding: 0.75rem;
+            min-width: 42px;
+            height: 42px;
             background: #0B0F1A;
             border: 2px solid #FAFAF9;
             border-radius: 0.375rem;
             color: #FAFAF9;
-            font-weight: bold;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .apply-btn:disabled {
@@ -504,17 +508,34 @@
 
         .time-input {
             flex: 0 1 auto;
+            min-width: 0;
+        }
+
+        .time-input .input-with-button {
+            display: flex;
+            gap: 0.5rem;
+            width: 100%;
         }
 
         .time-input input[type="text"] {
-            width: 80px;
+            width: 120px;
+            min-width: 80px;
+            flex: 1 1 auto;
             text-align: center;
+        }
+
+        .manual-adjust-label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #FAFAF9;
+            font-size: 1rem;
         }
 
         .compare-header {
             display: flex;
-            justify-content: space-between;
             align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 0.5rem;
         }
 
         .compare-toggle {
@@ -619,6 +640,54 @@
         .advanced-btn.open {
             border-bottom-left-radius: 0;
             border-bottom-right-radius: 0;
+        }
+
+        .section-divider {
+            height: 1px;
+            background-color: rgba(95, 116, 112, 0.3); /* Using #5F7470 with opacity */
+            margin: 1rem 0;
+            width: 100%;
+        }
+
+        .input-group:not(:last-child) {
+            margin-bottom: 0.75rem;
+        }
+
+        .compare-rate-container {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            width: 100%;
+        }
+
+        .compare-rate-container .input-with-button {
+            flex: 1;
+            margin: 0;
+        }
+
+        .apply-btn {
+            padding: 0;
+            width: 42px;
+            height: 42px; /* Match the input height */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .input-with-button input {
+            height: 42px; /* Explicit height to match button */
+            padding: 0 0.75rem;
+        }
+
+        .input-with-button {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+
+        .input-with-button input {
+            height: 42px;
+            padding: 0 0.75rem;
         }
     </style>
 </head>
@@ -731,52 +800,68 @@
                         <button class="leg-button" data-legs="8">8</button>
                     </div>
                 </div>
+                <div class="section-divider"></div>
 
-                <div class="input-group time-controls">
-                    <div class="time-input">
-                        <label>Start Time</label>
-                        <div class="input-with-button">
-                            <input type="text" id="startTime" placeholder="HHMM" maxlength="4">
-                            <button id="applyStartTime" class="apply-btn">Apply</button>
+                <div class="input-group">
+                    <label>Manual Adjust</label>
+                    <div class="time-controls">
+                        <div class="time-input">
+                            <div class="input-with-button">
+                                <input type="text" id="startTime" placeholder="Start (HHMM)" maxlength="4">
+                                <button class="apply-btn" id="applyStartTime">
+                                    <svg viewBox="0 0 24 24" width="18" height="18">
+                                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
-                    </div>
-                    <div class="time-input">
-                        <label>End Time</label>
-                        <div class="input-with-button">
-                            <input type="text" id="endTime" placeholder="HHMM" maxlength="4">
-                            <button id="applyEndTime" class="apply-btn">Apply</button>
+                        <div class="time-input">
+                            <div class="input-with-button">
+                                <input type="text" id="endTime" placeholder="End (HHMM)" maxlength="4">
+                                <button class="apply-btn" id="applyEndTime">
+                                    <svg viewBox="0 0 24 24" width="18" height="18">
+                                        <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                                    </svg>
+                                </button>
+                            </div>
                         </div>
                     </div>
                 </div>
+                <div class="section-divider"></div>
 
                 <div class="input-group">
                     <label>Custom Rate</label>
                     <div class="input-with-button">
                         <input type="number" id="customRate" placeholder="0.00" step="0.01" min="0">
-                        <button id="applyCustomRate" class="apply-btn">Apply</button>
+                        <button class="apply-btn" id="applyCustomRate">
+                            <svg viewBox="0 0 24 24" width="18" height="18">
+                                <path fill="currentColor" d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                            </svg>
+                        </button>
                     </div>
                 </div>
+                <div class="section-divider"></div>
 
                 <div class="input-group">
-                    <div class="compare-header">
-                        <label>Compare Rate</label>
+                    <div class="compare-rate-container">
                         <label class="compare-toggle">
                             <input type="checkbox" id="compareToggle">
                             <span class="toggle-slider"></span>
                         </label>
-                    </div>
-                    <div class="input-with-button">
-                        <input type="number" id="compareRate" placeholder="0.00" step="0.01" min="0" disabled>
+                        <label>Compare Rate</label>
+                        <div class="input-with-button">
+                            <input type="number" id="compareRate" placeholder="0.00" step="0.01" min="0" disabled>
+                        </div>
                     </div>
                 </div>
 
                 <div class="input-group">
                     <div class="compare-header">
-                        <label>Per Day Mode</label>
                         <label class="compare-toggle">
                             <input type="checkbox" id="perDayToggle">
                             <span class="toggle-slider"></span>
                         </label>
+                        <label>Per Day Mode</label>
                     </div>
                 </div>
             </div>
