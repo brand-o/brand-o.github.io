@@ -70,19 +70,13 @@
             margin-bottom: 1rem;
             display: flex;
             flex-direction: column;
-            justify-content: center;
             align-items: center;
             min-height: 200px;
             position: relative;
         }
 
-        .earnings-display.has-legs {
-            justify-content: flex-start;
-        }
-
         #earnings {
             font-size: 4rem;
-            margin-bottom: 0;
             display: inline-flex;
             align-items: center;
             font-weight: bold;
@@ -105,15 +99,15 @@
         }
 
         .last-amounts {
-            width: 100%;
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.5rem;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.75rem;
             justify-content: center;
+            max-width: 200px;
+            margin: 2.5rem auto 0;
             position: absolute;
             bottom: 2rem;
-            left: 0;
-            right: 0;
+            width: 100%;
         }
 
         .last-amount {
@@ -703,14 +697,10 @@
             padding: 0 0.75rem;
         }
 
-        .earnings-display.has-legs #earnings {
-            position: static;
-            transform: none;
-            margin-bottom: 2.5rem;
-        }
-
+        .earnings-display.has-legs #earnings,
         .earnings-display.has-legs .last-amounts {
             position: static;
+            transform: none;
         }
     </style>
 </head>
@@ -1010,8 +1000,8 @@
             }
             lastAmountsContainer.innerHTML = html;
 
-            // Add or remove has-legs class based on whether we have legs or are running
-            if (legAmounts.length > 0 || isRunning) {
+            // Add or remove has-legs class based ONLY on whether we have completed legs
+            if (legAmounts.length > 0) {
                 earningsDisplay.classList.add('has-legs');
             } else {
                 earningsDisplay.classList.remove('has-legs');
