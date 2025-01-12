@@ -73,14 +73,23 @@
             justify-content: center;
             align-items: center;
             min-height: 200px;
+            position: relative;
+        }
+
+        .earnings-display.has-legs {
+            justify-content: flex-start;
         }
 
         #earnings {
             font-size: 4rem;
-            margin-bottom: 2.5rem;
+            margin-bottom: 0;
             display: inline-flex;
             align-items: center;
             font-weight: bold;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
         }
 
         .dollars {
@@ -96,12 +105,15 @@
         }
 
         .last-amounts {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 0.75rem;
+            width: 100%;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
             justify-content: center;
-            max-width: 200px;
-            margin: 0 auto;
+            position: absolute;
+            bottom: 2rem;
+            left: 0;
+            right: 0;
         }
 
         .last-amount {
@@ -600,10 +612,11 @@
 
         .comparison-text {
             font-size: 0.875rem;
-            text-align: center;
             color: #FAFAF9;
             opacity: 0.8;
-            margin-top: 0.25rem;
+            margin-top: 0.5rem;
+            text-align: center;
+            width: 100%;
         }
 
         .advanced-btn {
@@ -688,6 +701,16 @@
         .input-with-button input {
             height: 42px;
             padding: 0 0.75rem;
+        }
+
+        .earnings-display.has-legs #earnings {
+            position: static;
+            transform: none;
+            margin-bottom: 2.5rem;
+        }
+
+        .earnings-display.has-legs .last-amounts {
+            position: static;
         }
     </style>
 </head>
@@ -964,6 +987,7 @@
 
         function updateLegDisplay() {
             const lastAmountsContainer = document.querySelector('.last-amounts');
+            const earningsDisplay = document.querySelector('.earnings-display');
             let html = '';
             
             // Display all stored legs
@@ -985,6 +1009,13 @@
                     </div>`;
             }
             lastAmountsContainer.innerHTML = html;
+
+            // Add or remove has-legs class based on whether we have legs or are running
+            if (legAmounts.length > 0 || isRunning) {
+                earningsDisplay.classList.add('has-legs');
+            } else {
+                earningsDisplay.classList.remove('has-legs');
+            }
 
             // Calculate and display total only if we have more than one leg or a completed leg plus running timer
             const existingTotal = document.querySelector('.total-amount');
